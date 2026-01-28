@@ -29,6 +29,11 @@ If you want to change the state of a feature gate, configure it before you apply
 
 For information on the available feature gates, their default states, and how to configure them, see xref:ref-operator-cluster-feature-gates-{context}[Feature gates].
 
+IMPORTANT: Starting from Strimzi 0.50.0, standalone Topic Operator deployments require a volume mount for cluster CA certificates at `/etc/cluster-ca-certs/`.
+When deploying the Topic Operator through the Cluster Operator (using a `Kafka` custom resource), this volume mount is automatically created.
+If you are running a standalone Topic Operator deployment, you must manually configure this volume mount before upgrading to version 0.50.0 or later.
+See xref:deploying-the-topic-operator-standalone-{context}[Deploying the standalone Topic Operator] for configuration details.
+
 
 .Procedure
 

@@ -1,0 +1,43 @@
+:_mod-docs-content-type: CONCEPT
+
+// This module is included in the following assemblies:
+//
+// assembly-upgrade.adoc
+
+[id='con-upgrade-050-topic-operator-{context}']
+= Strimzi 0.50.0 upgrade considerations for standalone Topic Operator deployments
+
+[role="_abstract"]
+Strimzi 0.50.0 introduces a requirement for cluster CA certificates when running the Topic Operator.
+This change affects standalone Topic Operator deployments that are not managed by the Cluster Operator.
+
+== Mandatory cluster CA certificate volume mount
+
+Starting from Strimzi 0.50.0, the Topic Operator requires access to the cluster CA certificate for establishing secure TLS connections to Kafka brokers and Cruise Control.
+The Topic Operator expects to find the CA certificate at `/etc/cluster-ca-certs/ca.crt`.
+
+When deploying the Topic Operator through the Cluster Operator (using a `Kafka` custom resource with the Entity Operator configuration), this volume mount is automatically created and managed by the Cluster Operator.
+No manual configuration is required.
+
+However, when deploying the Topic Operator standalone (manually), you must explicitly configure the volume mount in your deployment.
+
+== Required configuration for standalone deployments
+
+If you are running a standalone Topic Operator deployment, you need to:
+
+. Create a Kubernetes Secret containing the cluster CA certificate in PEM format.
+. Mount this secret as a volume at `/etc/cluster-ca-certs/` in the Topic Operator deployment.
+
+Without this volume mount, the Topic Operator container will fail to start with an error indicating that it cannot find the required CA certificate file.
+
+For detailed configuration instructions and examples, see xref:deploying-the-topic-operator-standalone-{context}[Deploying the standalone Topic Operator].
+
+== Impact on upgrades
+
+When upgrading from Strimzi 0.49.x or earlier to 0.50.0:
+
+* **Cluster Operator managed deployments**: No action required. The Cluster Operator automatically handles the volume mount configuration.
+* **Standalone deployments**: You must update your deployment configuration to include the cluster CA certificate volume mount before or during the upgrade to 0.50.0. 
+  Failure to do so will result in the Topic Operator failing to start.
+
+NOTE: If you deployed the Topic Operator using a custom deployment method (for example, using Jsonnet, Helm charts not provided by Strimzi, or other infrastructure-as-code tools), ensure that your deployment templates are updated to include the required volume mount configuration.
