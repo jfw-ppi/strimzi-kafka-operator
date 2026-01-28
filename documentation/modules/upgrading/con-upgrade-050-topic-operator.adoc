@@ -13,8 +13,9 @@ This change affects standalone Topic Operator deployments that are not managed b
 
 == Mandatory cluster CA certificate volume mount
 
-Starting from Strimzi 0.50.0, the Topic Operator requires access to the cluster CA certificate for establishing secure TLS connections to Kafka brokers and Cruise Control.
+Starting from Strimzi 0.50.0, the Topic Operator requires access to the cluster CA certificate for TLS verification when connecting to Kafka brokers.
 The Topic Operator expects to find the CA certificate at `/etc/cluster-ca-certs/ca.crt`.
+This requirement applies to all Topic Operator deployments, regardless of whether Cruise Control is enabled or not.
 
 When deploying the Topic Operator through the Cluster Operator (using a `Kafka` custom resource with the Entity Operator configuration), this volume mount is automatically created and managed by the Cluster Operator.
 No manual configuration is required.
@@ -28,7 +29,7 @@ If you are running a standalone Topic Operator deployment, you need to:
 . Create a Kubernetes Secret containing the cluster CA certificate in PEM format.
 . Mount this secret as a volume at `/etc/cluster-ca-certs/` in the Topic Operator deployment.
 
-Without this volume mount, the Topic Operator container will fail to start with an error indicating that it cannot find the required CA certificate file.
+Without this volume mount, the Topic Operator container will fail to start with a `java.io.FileNotFoundException` error indicating that it cannot find the required CA certificate file at `/etc/cluster-ca-certs/ca.crt`.
 
 For detailed configuration instructions and examples, see xref:deploying-the-topic-operator-standalone-{context}[Deploying the standalone Topic Operator].
 

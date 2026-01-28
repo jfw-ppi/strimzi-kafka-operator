@@ -38,7 +38,8 @@ the Kafka cluster can be running on a bare-metal environment, a virtual machine,
 . Edit the `env` properties in the `install/topic-operator/05-Deployment-strimzi-topic-operator.yaml` standalone deployment file.
 +
 IMPORTANT: Starting from Strimzi 0.50.0, the Topic Operator requires a volume mount for cluster CA certificates at `/etc/cluster-ca-certs/`.
-This volume mount must contain the cluster CA certificate file (`ca.crt`) that the Topic Operator uses to establish secure TLS connections to Kafka brokers and Cruise Control.
+This volume mount must contain the cluster CA certificate file (`ca.crt`) that the Topic Operator uses for TLS verification when connecting to Kafka brokers.
+This requirement applies to all deployments, regardless of whether Cruise Control is enabled.
 The deployment file includes this configuration by default, but you need to ensure that the referenced secret exists and contains the correct CA certificate.
 +
 .Example standalone Topic Operator deployment configuration
@@ -130,8 +131,10 @@ You can set the value to `PLAINTEXT`, `SSL`, `SASL_PLAINTEXT`, or `SASL_SSL`.
 
 . Configure the cluster CA certificate volume mount for TLS connections.
 +
-Starting from Strimzi 0.50.0, the Topic Operator requires access to the cluster CA certificate for establishing secure connections.
+Starting from Strimzi 0.50.0, the Topic Operator requires access to the cluster CA certificate for TLS verification when connecting to Kafka brokers.
 The Topic Operator expects to find the CA certificate at `/etc/cluster-ca-certs/ca.crt`.
+This requirement applies to all deployments, regardless of whether Cruise Control is enabled or not.
+Without this volume mount, the Topic Operator will fail to start with a `java.io.FileNotFoundException: "/etc/cluster-ca-certs/*.crt"` error.
 +
 You need to create a Kubernetes Secret containing the cluster CA certificate and mount it in the Topic Operator deployment:
 +

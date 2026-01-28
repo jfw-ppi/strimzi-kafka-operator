@@ -9,7 +9,7 @@
 * Use Java 21 as the runtime and language level
 * Strimzi Drain Cleaner updated to 1.5.0 (included in the Strimzi installation files)
 * Support for Linux user namespaces in Strimzi Pods through the `hostUsers` Pod option
-* Topic Operator now requires the cluster CA certificate volume mount at `/etc/cluster-ca-certs/` for secure connections to Kafka and Cruise Control
+* Topic Operator now requires the cluster CA certificate volume mount at `/etc/cluster-ca-certs/` for TLS verification when connecting to Kafka brokers
 
 ### Major changes, deprecations, and removals
 
@@ -22,8 +22,9 @@
 * **Topic Operator now requires a volume mount for cluster CA certificates at `/etc/cluster-ca-certs/`.**
   When deploying the Topic Operator using the Cluster Operator (through the `Kafka` custom resource), this volume mount is automatically created.
   **However, when deploying the Topic Operator standalone (manually), you must explicitly configure this volume mount in your deployment.**
-  The Topic Operator expects the cluster CA certificate at `/etc/cluster-ca-certs/ca.crt` for establishing secure TLS connections to Kafka brokers and Cruise Control.
-  Without this volume mount, the Topic Operator container will fail to start.
+  The Topic Operator expects the cluster CA certificate at `/etc/cluster-ca-certs/ca.crt` for TLS verification when connecting to Kafka brokers.
+  This requirement applies to all Topic Operator deployments, regardless of whether Cruise Control is enabled.
+  Without this volume mount, the Topic Operator container will fail to start with a `java.io.FileNotFoundException`.
   See the standalone Topic Operator deployment documentation for configuration examples.
 
 ## 0.49.1
