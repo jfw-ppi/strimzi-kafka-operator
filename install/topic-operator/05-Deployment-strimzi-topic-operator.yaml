@@ -20,6 +20,12 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 5Mi
+        # Volume containing the cluster CA certificate for TLS connections to Kafka and Cruise Control
+        # This volume mount is REQUIRED starting from Strimzi 0.50.0
+        # The secret should contain the cluster CA certificate under the key 'ca.crt'
+        - name: cluster-ca-certs
+          secret:
+            secretName: my-cluster-cluster-ca-cert
       containers:
         - name: strimzi-topic-operator
           image: quay.io/strimzi/operator:0.50.0
@@ -28,6 +34,10 @@ spec:
           volumeMounts:
             - name: strimzi-tmp
               mountPath: /tmp
+            # Mount containing the cluster CA certificate for TLS connections
+            # This volume mount is REQUIRED starting from Strimzi 0.50.0
+            - name: cluster-ca-certs
+              mountPath: /etc/cluster-ca-certs
           env:
             - name: STRIMZI_RESOURCE_LABELS
               value: "strimzi.io/cluster=my-cluster"
