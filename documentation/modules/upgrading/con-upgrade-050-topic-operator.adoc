@@ -50,3 +50,29 @@ When upgrading from Strimzi 0.49.x or earlier to 0.50.0:
 * **Standalone deployments without Cruise Control or without SSL**: No action required. The CA certificate is not accessed in these configurations.
 
 NOTE: If you deployed the Topic Operator using a custom deployment method (for example, using Jsonnet, Helm charts not provided by Strimzi, or other infrastructure-as-code tools) and have Cruise Control with SSL enabled, ensure that your deployment templates are updated to include the required volume mount configuration.
+
+== Troubleshooting certificate-related errors
+
+If you encounter certificate-related errors with the Topic Operator in version 0.50.0 or later, verify whether Cruise Control is actually enabled in your deployment:
+
+**For Cluster Operator managed deployments:**
+Check if Cruise Control is configured in your `Kafka` custom resource:
+```yaml
+spec:
+  cruiseControl: {} # If this section exists, Cruise Control is enabled
+```
+When Cruise Control is present in the Kafka CR, the Cluster Operator automatically sets `CRUISE_CONTROL_SSL_ENABLED=true`, which means the CA certificate will be accessed.
+
+**For standalone deployments:**
+Check the environment variables in your Topic Operator deployment:
+```
+STRIMZI_CRUISE_CONTROL_ENABLED=true
+STRIMZI_CRUISE_CONTROL_SSL_ENABLED=true
+```
+If both are set to `true`, the CA certificate at `/etc/cluster-ca-certs/ca.crt` must be available.
+
+**Common error messages:**
+* `IllegalArgumentException: Cruise Control certificate is not set` - Cruise Control SSL is enabled but the certificate file is missing or empty
+* `File not found: /etc/cluster-ca-certs/ca.crt` - Cruise Control SSL is enabled but the volume mount is not configured
+
+If you encounter these errors but believe Cruise Control is not enabled, verify the environment variables in your running Topic Operator pod.

@@ -136,7 +136,10 @@ The Topic Operator expects to find the CA certificate at `/etc/cluster-ca-certs/
 +
 **Important:** This certificate is specifically for Cruise Control SSL connections. It is NOT used for Kafka broker connections.
 The certificate file is only accessed when both Cruise Control and SSL are enabled for Cruise Control.
-If you are not using Cruise Control or if SSL is not enabled, you can skip this configuration step.
++
+**Note for Cluster Operator users:** If you configure Cruise Control in your `Kafka` custom resource (the `.spec.cruiseControl` section exists), the Cluster Operator automatically enables SSL for Cruise Control and creates the required volume mount.
++
+If you are deploying standalone and are not using Cruise Control or if SSL is not enabled, you can skip this configuration step.
 +
 If you need the certificate for Cruise Control SSL, create a Kubernetes Secret containing the cluster CA certificate and mount it in the Topic Operator deployment:
 +

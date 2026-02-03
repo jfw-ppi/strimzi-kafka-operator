@@ -23,8 +23,10 @@
   When deploying the Topic Operator using the Cluster Operator (through the `Kafka` custom resource), this volume mount is automatically created for consistency.
   **For standalone deployments:**
   - **If Cruise Control is enabled with SSL**: You must configure this volume mount with the cluster CA certificate at `/etc/cluster-ca-certs/ca.crt`. The certificate is used for secure TLS connections to Cruise Control.
+    Note: When Cruise Control is configured in a `Kafka` CR (`.spec.cruiseControl` section exists), the Cluster Operator automatically enables SSL, so the certificate is required.
   - **If Cruise Control is not enabled or SSL is not enabled**: The volume mount is still created by the Cluster Operator for consistency, but the certificate file is not accessed. For standalone deployments without Cruise Control SSL, you may omit this mount or provide a dummy secret.
-  Without the required certificate when Cruise Control SSL is enabled, the Topic Operator will fail when attempting to connect to Cruise Control with an `IllegalArgumentException`.
+  Without the required certificate when Cruise Control SSL is enabled, the Topic Operator will fail when attempting to connect to Cruise Control with an `IllegalArgumentException: Cruise Control certificate is not set`.
+  If you encounter certificate-related errors, verify whether Cruise Control is actually enabled by checking your `Kafka` CR or the `STRIMZI_CRUISE_CONTROL_SSL_ENABLED` environment variable.
   See the standalone Topic Operator deployment documentation for configuration examples.
 
 ## 0.49.1
