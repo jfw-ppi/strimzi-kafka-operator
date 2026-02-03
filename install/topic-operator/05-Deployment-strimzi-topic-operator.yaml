@@ -20,6 +20,13 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 5Mi
+        # Volume containing the cluster CA certificate for Cruise Control SSL connections
+        # This volume mount is required when Cruise Control is enabled with SSL (starting from Strimzi 0.50.0)
+        # If Cruise Control is not used or SSL is not enabled, this volume can be omitted
+        # The secret should contain the cluster CA certificate under the key 'ca.crt'
+        - name: cluster-ca-certs
+          secret:
+            secretName: my-cluster-cluster-ca-cert
       containers:
         - name: strimzi-topic-operator
           image: quay.io/strimzi/operator:0.50.0
@@ -28,6 +35,11 @@ spec:
           volumeMounts:
             - name: strimzi-tmp
               mountPath: /tmp
+            # Mount containing the cluster CA certificate for Cruise Control SSL connections
+            # This volume mount is required when Cruise Control is enabled with SSL (starting from Strimzi 0.50.0)
+            # If Cruise Control is not used or SSL is not enabled, this mount can be omitted
+            - name: cluster-ca-certs
+              mountPath: /etc/cluster-ca-certs
           env:
             - name: STRIMZI_RESOURCE_LABELS
               value: "strimzi.io/cluster=my-cluster"

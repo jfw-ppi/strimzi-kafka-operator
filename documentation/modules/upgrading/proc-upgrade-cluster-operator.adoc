@@ -29,6 +29,13 @@ If you want to change the state of a feature gate, configure it before you apply
 
 For information on the available feature gates, their default states, and how to configure them, see xref:ref-operator-cluster-feature-gates-{context}[Feature gates].
 
+IMPORTANT: Starting from Strimzi 0.50.0, standalone Topic Operator deployments with Cruise Control SSL enabled require a volume mount for cluster CA certificates at `/etc/cluster-ca-certs/`.
+When deploying the Topic Operator through the Cluster Operator (using a `Kafka` custom resource), this volume mount is automatically created.
+If you are running a standalone Topic Operator deployment with Cruise Control SSL enabled, you must manually configure this volume mount before upgrading to version 0.50.0 or later.
+The certificate is used specifically for secure TLS connections to Cruise Control and is only accessed when Cruise Control SSL is enabled.
+If you are not using Cruise Control or SSL is not enabled, no action is required.
+See xref:deploying-the-topic-operator-standalone-{context}[Deploying the standalone Topic Operator] for configuration details.
+
 
 .Procedure
 

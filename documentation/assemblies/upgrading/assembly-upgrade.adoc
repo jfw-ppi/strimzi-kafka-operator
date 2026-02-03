@@ -35,6 +35,9 @@ include::../../modules/upgrading/con-migrate-kraft-pre-0.39.adoc[leveloffset=+1]
 //upgrade considerations for v1 conversion
 include::../../modules/upgrading/con-api-conversion-v1.adoc[leveloffset=+1]
 
+//upgrade considerations for standalone Topic Operator in 0.50.0
+include::../../modules/upgrading/con-upgrade-050-topic-operator.adoc[leveloffset=+1]
+
 //upgrading cluster operator
 include::assembly-upgrade-cluster-operator.adoc[leveloffset=+1]
 

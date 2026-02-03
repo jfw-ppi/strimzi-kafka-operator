@@ -1,0 +1,78 @@
+:_mod-docs-content-type: CONCEPT
+
+// This module is included in the following assemblies:
+//
+// assembly-upgrade.adoc
+
+[id='con-upgrade-050-topic-operator-{context}']
+= Strimzi 0.50.0 upgrade considerations for standalone Topic Operator deployments
+
+[role="_abstract"]
+Strimzi 0.50.0 introduces a requirement for cluster CA certificates when running the Topic Operator.
+This change affects standalone Topic Operator deployments that are not managed by the Cluster Operator.
+
+== Mandatory cluster CA certificate volume mount
+
+Starting from Strimzi 0.50.0, the Topic Operator requires access to the cluster CA certificate when Cruise Control is enabled with SSL.
+The Topic Operator expects to find the CA certificate at `/etc/cluster-ca-certs/ca.crt` for establishing secure TLS connections to Cruise Control.
+
+**Important distinction:**
+The CA certificate is specifically used for Cruise Control SSL connections, not for Kafka broker connections.
+The certificate is only accessed when both Cruise Control and SSL are enabled for Cruise Control.
+
+When deploying the Topic Operator through the Cluster Operator (using a `Kafka` custom resource with the Entity Operator configuration), this volume mount is automatically created for all deployments for consistency, regardless of whether Cruise Control is enabled.
+No manual configuration is required.
+
+However, when deploying the Topic Operator standalone (manually), the volume mount configuration depends on your Cruise Control settings:
+* **With Cruise Control SSL enabled**: You must configure the volume mount with a valid cluster CA certificate
+* **Without Cruise Control or without SSL**: The volume mount can be omitted or can point to an empty/dummy secret
+
+== Required configuration for standalone deployments
+
+If you are running a standalone Topic Operator deployment with Cruise Control SSL enabled, you need to:
+
+. Create a Kubernetes Secret containing the cluster CA certificate in PEM format.
+. Mount this secret as a volume at `/etc/cluster-ca-certs/` in the Topic Operator deployment.
+
+Without this volume mount, attempting to connect to Cruise Control with SSL enabled will fail with an `IllegalArgumentException: Cruise Control certificate is not set`.
+
+If Cruise Control is not enabled or SSL is not enabled for Cruise Control, the certificate file is not accessed and the volume mount can be omitted in standalone deployments.
+
+For detailed configuration instructions and examples, see xref:deploying-the-topic-operator-standalone-{context}[Deploying the standalone Topic Operator].
+
+== Impact on upgrades
+
+When upgrading from Strimzi 0.49.x or earlier to 0.50.0:
+
+* **Cluster Operator managed deployments**: No action required. The Cluster Operator automatically handles the volume mount configuration.
+* **Standalone deployments with Cruise Control SSL enabled**: You must update your deployment configuration to include the cluster CA certificate volume mount before or during the upgrade to 0.50.0. 
+  Failure to do so will result in errors when the Topic Operator attempts to connect to Cruise Control.
+* **Standalone deployments without Cruise Control or without SSL**: No action required. The CA certificate is not accessed in these configurations.
+
+NOTE: If you deployed the Topic Operator using a custom deployment method (for example, using Jsonnet, Helm charts not provided by Strimzi, or other infrastructure-as-code tools) and have Cruise Control with SSL enabled, ensure that your deployment templates are updated to include the required volume mount configuration.
+
+== Troubleshooting certificate-related errors
+
+If you encounter certificate-related errors with the Topic Operator in version 0.50.0 or later, verify whether Cruise Control is actually enabled in your deployment:
+
+**For Cluster Operator managed deployments:**
+Check if Cruise Control is configured in your `Kafka` custom resource:
+```yaml
+spec:
+  cruiseControl: {} # If this section exists, Cruise Control is enabled
+```
+When Cruise Control is present in the Kafka CR, the Cluster Operator automatically sets `CRUISE_CONTROL_SSL_ENABLED=true`, which means the CA certificate will be accessed.
+
+**For standalone deployments:**
+Check the environment variables in your Topic Operator deployment:
+```
+STRIMZI_CRUISE_CONTROL_ENABLED=true
+STRIMZI_CRUISE_CONTROL_SSL_ENABLED=true
+```
+If both are set to `true`, the CA certificate at `/etc/cluster-ca-certs/ca.crt` must be available.
+
+**Common error messages:**
+* `IllegalArgumentException: Cruise Control certificate is not set` - Cruise Control SSL is enabled but the certificate file is missing or empty
+* `File not found: /etc/cluster-ca-certs/ca.crt` - Cruise Control SSL is enabled but the volume mount is not configured
+
+If you encounter these errors but believe Cruise Control is not enabled, verify the environment variables in your running Topic Operator pod.
